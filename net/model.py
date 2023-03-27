@@ -12,7 +12,7 @@ class MyModel(nn.Module):
             self.encoder.extend([
                 nn.Conv2d(in_channels, out_channels=h_dim,
                           kernel_size=3, stride=2, padding=1),
-                nn.BatchNorm2d(h_dim),
+                # nn.BatchNorm2d(h_dim),
                 nn.ReLU(),
                 nn.MaxPool2d(kernel_size=2, stride=2)])
             in_channels = h_dim
@@ -22,7 +22,7 @@ class MyModel(nn.Module):
         # fc
         n_features = (imsize ** 2 // 16 ** len(hidden_dims)) * hidden_dims[-1] * 2
         self.head = [nn.Linear(n_features, 256),
-                     nn.BatchNorm1d(256),
+                     # nn.BatchNorm1d(256),
                      nn.ReLU(),
                      nn.Linear(256, 1),
                      nn.Sigmoid()]
