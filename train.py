@@ -17,8 +17,7 @@ class PF(float):
 def labels_to_value(labels1, labels2):
     err_ranges = torch.FloatTensor(((4.5, 12), (3, 45), (0, 360)))
     errs = torch.abs(labels1 - labels2)[..., :3]
-    deviation_percent = 0.5
-    normalized_errs = errs / (err_ranges[:, 1] - err_ranges[:, 0]).cuda() / deviation_percent
+    normalized_errs = errs / (err_ranges[:, 1] - err_ranges[:, 0]).cuda()
 
     # add column for class equality
     # c1, c2 = labels1[..., 3].short(), labels2[..., 3].short()
@@ -26,17 +25,16 @@ def labels_to_value(labels1, labels2):
     # normalized_errs = torch.cat((normalized_errs, class_equal_err), dim=1)
 
     # gt = torch.mean(normalized_errs, dim=1)
-    gt = normalized_errs[:, 2]
-    return gt
+    # gt = normalized_errs[:, 2]
+    return normalized_errs
 
 
-# gts = []
+gts = []
 
 
 def loss_function(pred, labels1, labels2):
     gt = labels_to_value(labels1, labels2)
-    # gts.extend(gt.cpu().detach().numpy())
-    pred = pred.squeeze()
+    gts.extend(gt.cpu().detach().numpy().flatten())
     loss = torch.mean(torch.abs(pred - gt))
     return loss
 
@@ -68,8 +66,8 @@ if __name__ == '__main__':
             optimizer.step()
 
         # plot gts distribution
-        # plt.hist(gts, bins=10)
-        # plt.show()
+        plt.hist(gts, bins=50)
+        plt.show()
 
         # test
         torch.cuda.empty_cache()

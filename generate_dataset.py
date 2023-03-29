@@ -15,29 +15,30 @@ if __name__ == '__main__':
     meshes = [construct_mesh(*json_to_verts_faces(path)) for i, path in enumerate(glob("data/objs/*.json")) if
               i in subset]
     renderer = get_renderer(imsize=512)
-    # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (3, 45), (0, 360), (0, len(meshes) - 1)
-    dist_range, elev_range, azim_range, class_id_range = (7, 7), (15, 15), (0, 360), (0, len(meshes) - 1)
+    dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (3, 45), (0, 360), (0, len(meshes) - 1)
+    # dist_range, elev_range, azim_range, class_id_range = (7, 7), (15, 15), (0, 360), (0, len(meshes) - 1)
 
     values = []
-    for i in tqdm(range(10000)):
-        dist, elev, azim, class_id = np.random.uniform(*dist_range), np.random.uniform(*elev_range), \
-            np.random.uniform(*azim_range), np.random.randint(*class_id_range)
+    for i in tqdm(range(5000)):
+        label1, label2 = [], []
+        for a, b in [dist_range, elev_range, azim_range]:
+            val1, val2 = np.random.triangular(a, a, b), np.random.triangular(a, b, b)
+            if random.random() > 0.5:  # to balance l1 and l2 distributions
+                val1, val2 = val2, val1
+            label1.append(val1)
+            label2.append(val2)
 
+        class_id = np.random.randint(*class_id_range)
+        label1.append(class_id)
+        label2.append(class_id)
+
+        dist, elev, azim, class_id = label1
         fov = 2 * np.arctan(0.5 * 6 / dist) * 180 / np.pi
         img1 = get_imgs(meshes[class_id], renderer, dist, elev, azim, fov)[1]
-        label1 = [dist, elev, azim, class_id]
 
-        diff_scale = 0.5
-        new_vals = []
-        for orig, val_range in zip((dist, elev, azim), (dist_range, elev_range, azim_range)):
-            deviation = (val_range[1] - val_range[0]) * diff_scale * random.random()
-            if random.random() > 0.5:
-                deviation *= -1
-            new_vals.append(orig + deviation)
-        dist2, elev2, azim2 = new_vals
+        dist2, elev2, azim2, class_id = label2
         fov2 = 2 * np.arctan(0.5 * 6 / dist2) * 180 / np.pi
         img2 = get_imgs(meshes[class_id], renderer, dist2, elev2, azim2, fov2)[1]
-        label2 = [dist2, elev2, azim2, class_id]
 
         # create folder
         os.makedirs(f"data/dataset/canny", exist_ok=True)

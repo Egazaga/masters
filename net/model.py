@@ -25,7 +25,7 @@ class MyModel(nn.Module):
         self.head = [nn.Linear(n_features, 16),
                      nn.BatchNorm1d(16),
                      nn.ReLU(),
-                     nn.Linear(16, 1),
+                     nn.Linear(16, 3),
                      nn.Sigmoid()]
         self.head = nn.Sequential(*self.head)
 
