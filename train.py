@@ -17,7 +17,7 @@ class PF(float):
 def labels_to_value(labels1, labels2):
     err_ranges = torch.FloatTensor(((4.5, 12), (3, 45), (0, 360)))
     errs = torch.abs(labels1 - labels2)[..., :3]
-    deviation_percent = 0.1
+    deviation_percent = 0.5
     normalized_errs = errs / (err_ranges[:, 1] - err_ranges[:, 0]).cuda() / deviation_percent
 
     # add column for class equality
@@ -41,41 +41,55 @@ def loss_function(pred, labels1, labels2):
     return loss
 
 
-batch_size = 4
-train_dataset, test_dataset = TupleDataset(train=True), TupleDataset(train=False)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+if __name__ == '__main__':
+    batch_size = 64
+    train_dataset, test_dataset = TupleDataset(train=True), TupleDataset(train=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-model = HQEncoder().cuda()
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    # for i in range(10):
+    #     test_dataset.visualize(i)
 
-model.train()
-for num_epoch, epoch in enumerate(range(100)):
-    # train
-    train_loss = 0
-    for batch_idx, (imgs1, imgs2, labels1, labels2) in enumerate(tqdm(train_loader)):
-        imgs1, imgs2, labels1, labels2 = imgs1.cuda(), imgs2.cuda(), labels1.cuda(), labels2.cuda()
-        optimizer.zero_grad()
-        pred = model(imgs1, imgs2)
-        loss = loss_function(pred, labels1, labels2)
-        loss.backward()
-        train_loss += loss.item()
-        optimizer.step()
+    model = MyModel().cuda()
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    best_test_loss = 1000
 
-    # plot gts distribution
-    # plt.hist(gts, bins=10)
-    # plt.show()
+    for num_epoch in range(100):
+        # train
+        model.train()
+        train_loss = 0
+        for batch_idx, (imgs1, imgs2, labels1, labels2) in enumerate(tqdm(train_loader)):
+            imgs1, imgs2, labels1, labels2 = imgs1.cuda(), imgs2.cuda(), labels1.cuda(), labels2.cuda()
+            optimizer.zero_grad()
+            pred = model(imgs1, imgs2)
+            loss = loss_function(pred, labels1, labels2)
+            loss.backward()
+            train_loss += loss.item()
+            optimizer.step()
 
-    # test
-    test_loss = 0
-    for batch_idx, (imgs1, imgs2, labels1, labels2) in enumerate(tqdm(test_loader)):
-        imgs1, imgs2, labels1, labels2 = imgs1.cuda(), imgs2.cuda(), labels1.cuda(), labels2.cuda()
-        pred = model(imgs1, imgs2)
-        loss = loss_function(pred, labels1, labels2)
-        if num_epoch > 5:
-            print(PF(pred[0][0].item()), PF(labels_to_value(labels1, labels2)[0].item()))
+        # plot gts distribution
+        # plt.hist(gts, bins=10)
+        # plt.show()
 
-        test_loss += loss.item()
+        # test
+        torch.cuda.empty_cache()
+        model.eval()
+        test_loss = 0
+        for batch_idx, (imgs1, imgs2, labels1, labels2) in enumerate(tqdm(test_loader)):
+            imgs1, imgs2, labels1, labels2 = imgs1.cuda(), imgs2.cuda(), labels1.cuda(), labels2.cuda()
+            with torch.no_grad():
+                pred = model(imgs1, imgs2)
+                loss = loss_function(pred, labels1, labels2)
+            test_loss += loss.item()
 
-    print('Epoch: {} Train loss: {:.4f} Test loss: {:.4f}'.format(
-        epoch, train_loss / len(train_loader), test_loss / len(test_loader)))
+            # if num_epoch > 5:
+            #     print(PF(pred[0][0].item()), PF(labels_to_value(labels1, labels2)[0].item()))
+
+        if test_loss < best_test_loss:
+            best_test_loss = test_loss
+            torch.save(model.state_dict(), "model.pth")
+
+        torch.cuda.empty_cache()
+
+        print('Epoch: {} Train loss: {:.4f} Test loss: {:.4f}'.format(
+            num_epoch, train_loss / len(train_loader), test_loss / len(test_loader)))

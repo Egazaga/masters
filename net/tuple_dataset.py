@@ -11,13 +11,13 @@ from torchvision.transforms import Compose, ToTensor
 class TupleDataset(Dataset):
     def __init__(self, path="data/dataset/canny", train=True):
         paths = sorted(glob(path + "/*.png"))
-        paths = paths[:int(len(paths) * 0.8)] if train else paths[int(len(paths) * 0.8):]
-        self.imgs = [cv2.imread(path) for path in paths]
-        self.labels = np.load(path + "/../canny.npy")
+        self.paths = paths[:int(len(paths) * 0.8)] if train else paths[int(len(paths) * 0.8):]
+        labels = np.load(path + "/../canny.npy")
+        self.labels = labels[:int(len(paths) * 0.8)] if train else labels[int(len(paths) * 0.8):]
         self.transforms = self.get_transforms()
 
     def __len__(self):
-        return len(self.imgs)
+        return len(self.paths)
 
     def get_transforms(self):
         transform = [
@@ -28,11 +28,11 @@ class TupleDataset(Dataset):
         return transform
 
     def __getitem__(self, idx):
-        img1 = self.imgs[idx][:, :, 0]
+        img1 = cv2.imread(self.paths[idx])[:, :, 0]
         img1 = self.transforms(img1)
         label1 = self.labels[idx][0][:4]
 
-        img2 = self.imgs[idx][:, :, 1]
+        img2 = cv2.imread(self.paths[idx])[:, :, 1]
         img2 = self.transforms(img2)
         label2 = self.labels[idx][1][:4]
 
