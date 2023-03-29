@@ -16,11 +16,18 @@ if __name__ == '__main__':
     meshes = [construct_mesh(*json_to_verts_faces(path)) for i, path in enumerate(glob("data/objs/*.json")) if
               i in subset]
     renderer = get_renderer(imsize=512)
-    dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (3, 45), (0, 360), (0, len(meshes) - 1)
+    # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (3, 45), (0, 360), (0, len(meshes) - 1)
+    # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (0, 360), (0, len(meshes) - 1)
     # dist_range, elev_range, azim_range, class_id_range = (7, 7), (15, 15), (0, 360), (0, len(meshes) - 1)
+    # dist_range, elev_range, azim_range, class_id_range = (7, 7), (3, 45), (45, 45), (0, len(meshes) - 1)
+    dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (45, 45), (0, len(meshes) - 1)
+    output_dir = "data/dist5k/"
+    if os.path.exists(output_dir) and len(os.listdir(output_dir)) > 0:
+        print("Output directory already exists. Exiting.")
+        exit(1)
 
     values = []
-    for i in tqdm(range(10000)):
+    for i in tqdm(range(5000)):
         label1, label2 = [], []
         for a, b in [dist_range, elev_range, azim_range]:
             diff = np.random.uniform(0, b - a)
@@ -45,13 +52,13 @@ if __name__ == '__main__':
         img2 = get_imgs(meshes[class_id], renderer, dist2, elev2, azim2, fov2)[1]
 
         # create folder
-        os.makedirs(f"data/dataset/canny", exist_ok=True)
+        os.makedirs(output_dir + "/pic/", exist_ok=True)
         out_img = np.stack((img1, img2, np.zeros_like(img1)), axis=2)
-        cv2.imwrite(f"data/dataset/canny/{str(i).zfill(5)}.png", out_img)
+        cv2.imwrite(output_dir + "/pic/" + str(i).zfill(5) + ".png", out_img)
         values.append([label1, label2])
 
     # save values
-    np.save("data/dataset/canny.npy", np.array(values))
+    np.save(output_dir + "/data.npy", np.array(values))
 
     # plt.hist(np.abs(np.array(values)[:, 0, 0] - np.array(values)[:, 1, 0]), bins=50)
     # plt.hist(np.array(values)[:, 0, 0], bins=50)

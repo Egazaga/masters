@@ -9,10 +9,10 @@ from torchvision.transforms import Compose, ToTensor
 
 
 class TupleDataset(Dataset):
-    def __init__(self, path="data/dataset/canny", train=True):
-        paths = sorted(glob(path + "/*.png"))
+    def __init__(self, path="data/triples/", train=True):
+        paths = sorted(glob(path + "pic/*.png"))
         self.paths = paths[:int(len(paths) * 0.8)] if train else paths[int(len(paths) * 0.8):]
-        labels = np.load(path + "/../canny.npy")
+        labels = np.load(path + "/data.npy")
         self.labels = labels[:int(len(paths) * 0.8)] if train else labels[int(len(paths) * 0.8):]
         self.transforms = self.get_transforms()
 

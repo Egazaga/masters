@@ -3,7 +3,7 @@ from torch import nn
 
 
 class MyModel(nn.Module):
-    def __init__(self, in_channels=1, hidden_dims=(32, 64, 128, 256), imsize=512):
+    def __init__(self, in_channels=1, hidden_dims=(32, 64, 128, 256), imsize=512, out_channels=3):
         super(MyModel, self).__init__()
 
         # encoder
@@ -25,7 +25,7 @@ class MyModel(nn.Module):
         self.head = [nn.Linear(n_features, 16),
                      nn.BatchNorm1d(16),
                      nn.ReLU(),
-                     nn.Linear(16, 3),
+                     nn.Linear(16, out_channels),
                      nn.Sigmoid()]
         self.head = nn.Sequential(*self.head)
 

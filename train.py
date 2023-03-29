@@ -24,8 +24,8 @@ def labels_to_value(labels1, labels2):
     # class_equal_err = ~torch.eq(c1, c2).unsqueeze(1)
     # normalized_errs = torch.cat((normalized_errs, class_equal_err), dim=1)
 
-    # gt = torch.mean(normalized_errs, dim=1)
-    # gt = normalized_errs[:, 2]
+    # return normalized_errs[:, [1, 2]]
+    # return normalized_errs[:, 2].unsqueeze(1)
     return normalized_errs
 
 
@@ -35,20 +35,27 @@ def labels_to_value(labels1, labels2):
 def loss_function(pred, labels1, labels2):
     gt = labels_to_value(labels1, labels2)
     # gts.extend(gt.cpu().detach().numpy().flatten())
+    assert pred.shape == gt.shape
     loss = torch.mean(torch.abs(pred - gt))
     return loss
 
 
 if __name__ == '__main__':
+    # dataset_path = "data/tuples5k/"
+    dataset_path = "data/triples5k/"
+    # dataset_path = "data/dist5k/"
+    out_channels = 1
     batch_size = 64
-    train_dataset, test_dataset = TupleDataset(train=True), TupleDataset(train=False)
+
+    train_dataset = TupleDataset(path=dataset_path, train=True)
+    test_dataset = TupleDataset(path=dataset_path, train=False)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     # for i in range(10):
     #     test_dataset.visualize(i)
 
-    model = MyModel().cuda()
+    model = MyModel(out_channels=out_channels).cuda()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     best_test_loss = 1000
 
