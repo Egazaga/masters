@@ -23,7 +23,7 @@ for img_idx in range(-1, -100, -1):
     labels2 = np.load("data/dataset/canny.npy")[img_idx][1][:4]
     pred = model(img1, img2)
     gt = labels_to_value(torch.tensor(labels1[None]).cuda(), torch.tensor(labels2[None]).cuda())
-    print(PF(pred.item()), PF(gt.item()))
-    res.append((PF(pred.item()), PF(gt.item())))
+    print(pred.cpu().detach().numpy(), gt.cpu().detach().numpy())
+    res.append((pred.cpu().detach().numpy().mean(), gt.cpu().detach().numpy().mean()))
 # correlation
 print(np.corrcoef(np.array(res).T))

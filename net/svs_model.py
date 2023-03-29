@@ -38,7 +38,7 @@ class HQEncoder(nn.Module):
                      nn.Linear(sizes[-1] * 2, 256),
                      nn.BatchNorm1d(256),
                      nn.ReLU(),
-                     nn.Linear(256, 1),
+                     nn.Linear(256, 3),
                      nn.Sigmoid()]
         self.head = nn.Sequential(*self.head)
 

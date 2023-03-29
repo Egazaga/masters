@@ -29,12 +29,12 @@ def labels_to_value(labels1, labels2):
     return normalized_errs
 
 
-gts = []
+# gts = []
 
 
 def loss_function(pred, labels1, labels2):
     gt = labels_to_value(labels1, labels2)
-    gts.extend(gt.cpu().detach().numpy().flatten())
+    # gts.extend(gt.cpu().detach().numpy().flatten())
     loss = torch.mean(torch.abs(pred - gt))
     return loss
 
@@ -66,8 +66,8 @@ if __name__ == '__main__':
             optimizer.step()
 
         # plot gts distribution
-        plt.hist(gts, bins=50)
-        plt.show()
+        # plt.hist(gts, bins=50)
+        # plt.show()
 
         # test
         torch.cuda.empty_cache()

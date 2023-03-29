@@ -4,6 +4,7 @@ from glob import glob
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 from tqdm import tqdm
 
 from interactive_canny import get_imgs
@@ -19,12 +20,15 @@ if __name__ == '__main__':
     # dist_range, elev_range, azim_range, class_id_range = (7, 7), (15, 15), (0, 360), (0, len(meshes) - 1)
 
     values = []
-    for i in tqdm(range(5000)):
+    for i in tqdm(range(10000)):
         label1, label2 = [], []
         for a, b in [dist_range, elev_range, azim_range]:
-            val1, val2 = np.random.triangular(a, a, b), np.random.triangular(a, b, b)
+            diff = np.random.uniform(0, b - a)
+            val1 = np.random.uniform(a, b - diff)
+            val2 = val1 + diff
             if random.random() > 0.5:  # to balance l1 and l2 distributions
                 val1, val2 = val2, val1
+
             label1.append(val1)
             label2.append(val2)
 
@@ -48,3 +52,7 @@ if __name__ == '__main__':
 
     # save values
     np.save("data/dataset/canny.npy", np.array(values))
+
+    # plt.hist(np.abs(np.array(values)[:, 0, 0] - np.array(values)[:, 1, 0]), bins=50)
+    # plt.hist(np.array(values)[:, 0, 0], bins=50)
+    # plt.show()

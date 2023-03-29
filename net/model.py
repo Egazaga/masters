@@ -3,7 +3,7 @@ from torch import nn
 
 
 class MyModel(nn.Module):
-    def __init__(self, in_channels=1, hidden_dims=(8, 16, 32, 64), imsize=512):
+    def __init__(self, in_channels=1, hidden_dims=(32, 64, 128, 256), imsize=512):
         super(MyModel, self).__init__()
 
         # encoder
