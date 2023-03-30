@@ -20,8 +20,9 @@ if __name__ == '__main__':
     # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (0, 360), (0, len(meshes) - 1)
     # dist_range, elev_range, azim_range, class_id_range = (7, 7), (15, 15), (0, 360), (0, len(meshes) - 1)
     # dist_range, elev_range, azim_range, class_id_range = (7, 7), (3, 45), (45, 45), (0, len(meshes) - 1)
-    dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (45, 45), (0, len(meshes) - 1)
-    output_dir = "data/dist5k/"
+    # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (45, 45), (0, len(meshes) - 1)
+    dist_range, elev_range, azim_range, class_id_range = (7, 7), (3, 45), (0, 360), (0, len(meshes) - 1)
+    output_dir = "data/ea5k/"
     if os.path.exists(output_dir) and len(os.listdir(output_dir)) > 0:
         print("Output directory already exists. Exiting.")
         exit(1)

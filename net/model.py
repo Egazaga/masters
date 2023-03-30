@@ -3,8 +3,10 @@ from torch import nn
 
 
 class MyModel(nn.Module):
-    def __init__(self, in_channels=1, hidden_dims=(32, 64, 128, 256), imsize=512, out_channels=3):
+    def __init__(self, in_channels=1, hidden_dims=(32, 64, 128, 256), imsize=512, out_channels=3, multihead=False):
         super(MyModel, self).__init__()
+
+        self.multihead = multihead
 
         # encoder
         self.encoder = []
@@ -22,18 +24,32 @@ class MyModel(nn.Module):
 
         # fc
         n_features = (imsize ** 2 // 4 ** len(hidden_dims)) * hidden_dims[-1] * 2
-        self.head = [nn.Linear(n_features, 16),
-                     nn.BatchNorm1d(16),
-                     nn.ReLU(),
-                     nn.Linear(16, out_channels),
-                     nn.Sigmoid()]
-        self.head = nn.Sequential(*self.head)
+        if multihead:
+            self.heads = nn.ModuleList()
+            for i in range(out_channels):
+                self.heads.append(nn.Sequential(
+                    nn.Linear(n_features, 16),
+                    nn.BatchNorm1d(16),
+                    nn.ReLU(),
+                    nn.Linear(16, 1),
+                    nn.Sigmoid()
+                ))
+        else:
+            self.head = [nn.Linear(n_features, 16),
+                         nn.BatchNorm1d(16),
+                         nn.ReLU(),
+                         nn.Linear(16, out_channels),
+                         nn.Sigmoid()]
+            self.head = nn.Sequential(*self.head)
 
     def forward(self, x1, x2):
         x1 = self.encoder(x1)
         x2 = self.encoder(x2)
         x = torch.cat((x1, x2), dim=1)
-        x = self.head(x)
+        if self.multihead:
+            x = torch.concatenate([head(x) for head in self.heads], dim=1)
+        else:
+            x = self.head(x)
         return x
 
 

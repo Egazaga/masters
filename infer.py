@@ -11,16 +11,16 @@ from net.tuple_dataset import TupleDataset
 from train import labels_to_value, PF
 
 # load MyModel
-model = MyModel(out_channels=1).cuda()
+model = MyModel(out_channels=3).cuda()
 model.load_state_dict(torch.load("model.pth"))
 model.eval()
 
-path = "data/dist5k/"
+path = "data/triples5k/"
 paths = sorted(glob(path + "pic/*.png"))
 labels = np.load(path + "/data.npy")
 
 res = []
-for img_idx in range(1, 100, 1):
+for img_idx in range(-1, -100, -1):
     path = paths[img_idx]
     img1, img2 = cv2.imread(path)[:, :, 0], cv2.imread(path)[:, :, 1]
     img1, img2 = ToTensor()(img1).unsqueeze(0).cuda(), ToTensor()(img2).unsqueeze(0).cuda()

@@ -25,8 +25,8 @@ def labels_to_value(labels1, labels2):
     # normalized_errs = torch.cat((normalized_errs, class_equal_err), dim=1)
 
     # return normalized_errs[:, [1, 2]]
-    # return normalized_errs[:, 2].unsqueeze(1)
-    return normalized_errs
+    return normalized_errs[:, 2].unsqueeze(1)
+    # return normalized_errs
 
 
 # gts = []
@@ -42,9 +42,10 @@ def loss_function(pred, labels1, labels2):
 
 if __name__ == '__main__':
     # dataset_path = "data/tuples5k/"
-    dataset_path = "data/triples5k/"
-    # dataset_path = "data/dist5k/"
+    # dataset_path = "data/triples5k/"
+    dataset_path = "data/azim5k/"
     out_channels = 1
+    multihead = True
     batch_size = 64
 
     train_dataset = TupleDataset(path=dataset_path, train=True)
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     # for i in range(10):
     #     test_dataset.visualize(i)
 
-    model = MyModel(out_channels=out_channels).cuda()
+    model = MyModel(out_channels=out_channels, multihead=multihead).cuda()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     best_test_loss = 1000
 
