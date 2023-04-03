@@ -24,23 +24,21 @@ class MyModel(nn.Module):
 
         # fc
         n_features = (imsize ** 2 // 4 ** len(hidden_dims)) * hidden_dims[-1] * 2
+        head_sizes = [n_features, 128, 64, 32]
         if multihead:
             self.heads = nn.ModuleList()
             for i in range(out_channels):
-                self.heads.append(nn.Sequential(
-                    nn.Linear(n_features, 16),
-                    nn.BatchNorm1d(16),
-                    nn.ReLU(),
-                    nn.Linear(16, 1),
-                    nn.Sigmoid()
-                ))
+                head = []
+                for hs1, hs2 in zip(head_sizes, head_sizes[1:]):
+                    head.extend([nn.Linear(hs1, hs2), nn.BatchNorm1d(hs2), nn.ReLU()])
+                head.extend([nn.Linear(head_sizes[-1], 1), nn.Sigmoid()])
+                self.heads.append(nn.Sequential(*head))
         else:
-            self.head = [nn.Linear(n_features, 16),
-                         nn.BatchNorm1d(16),
-                         nn.ReLU(),
-                         nn.Linear(16, out_channels),
-                         nn.Sigmoid()]
-            self.head = nn.Sequential(*self.head)
+            head = []
+            for hs1, hs2 in zip(head_sizes, head_sizes[1:]):
+                head.extend([nn.Linear(hs1, hs2), nn.BatchNorm1d(hs2), nn.ReLU()])
+            head.extend([nn.Linear(head_sizes[-1], out_channels), nn.Sigmoid()])
+            self.head = nn.Sequential(*head)
 
     def forward(self, x1, x2):
         x1 = self.encoder(x1)
@@ -54,7 +52,7 @@ class MyModel(nn.Module):
 
 
 if __name__ == "__main__":
-    model = MyModel()
+    model = MyModel(multihead=True, out_channels=1)
     img = torch.randn(2, 1, 512, 512)
 
     print(model(img, img).shape)

@@ -5,7 +5,7 @@ from scipy.optimize import differential_evolution
 from tqdm import tqdm
 from utils.render import json_to_verts_faces, construct_mesh, get_renderer
 from utils.model_subset import get_models_subset
-from utils import get_kpts, reproj_err
+from utils.utils import get_kpts, reproj_err
 
 
 def main():

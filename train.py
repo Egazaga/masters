@@ -15,8 +15,10 @@ class PF(float):
 
 
 def labels_to_value(labels1, labels2):
-    err_ranges = torch.FloatTensor(((4.5, 12), (3, 45), (0, 360)))
+    # err_ranges = torch.FloatTensor(((4.5, 12), (3, 45), (0, 360)))
+    err_ranges = torch.FloatTensor(((4.5, 12), (3, 45), (0, 180)))
     errs = torch.abs(labels1 - labels2)[..., :3]
+    errs[errs[:, 2] > 180, 2] = 360 - errs[errs[:, 2] > 180, 2]  # angle normalization to 0-180
     normalized_errs = errs / (err_ranges[:, 1] - err_ranges[:, 0]).cuda()
 
     # add column for class equality
@@ -24,8 +26,8 @@ def labels_to_value(labels1, labels2):
     # class_equal_err = ~torch.eq(c1, c2).unsqueeze(1)
     # normalized_errs = torch.cat((normalized_errs, class_equal_err), dim=1)
 
-    # return normalized_errs[:, [1, 2]]
-    return normalized_errs[:, 2].unsqueeze(1)
+    return normalized_errs[:, [1, 2]]
+    # return normalized_errs[:, 2].unsqueeze(1)
     # return normalized_errs
 
 
@@ -36,17 +38,18 @@ def loss_function(pred, labels1, labels2):
     gt = labels_to_value(labels1, labels2)
     # gts.extend(gt.cpu().detach().numpy().flatten())
     assert pred.shape == gt.shape
-    loss = torch.mean(torch.abs(pred - gt))
+    loss = torch.mean(torch.abs(pred - gt))  # mae
+    # loss = torch.mean((pred - gt) ** 2)  # mse
     return loss
 
 
 if __name__ == '__main__':
-    # dataset_path = "data/tuples5k/"
-    # dataset_path = "data/triples5k/"
-    dataset_path = "data/azim5k/"
-    out_channels = 1
+    dataset_path = "data/eac20k/"
+    # dataset_path = "data/triples20k/"
+    # dataset_path = "data/azim20k/"
+    out_channels = 2
     multihead = True
-    batch_size = 64
+    batch_size = 32
 
     train_dataset = TupleDataset(path=dataset_path, train=True)
     test_dataset = TupleDataset(path=dataset_path, train=False)

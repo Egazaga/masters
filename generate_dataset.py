@@ -22,13 +22,13 @@ if __name__ == '__main__':
     # dist_range, elev_range, azim_range, class_id_range = (7, 7), (3, 45), (45, 45), (0, len(meshes) - 1)
     # dist_range, elev_range, azim_range, class_id_range = (4.5, 12), (15, 15), (45, 45), (0, len(meshes) - 1)
     dist_range, elev_range, azim_range, class_id_range = (7, 7), (3, 45), (0, 360), (0, len(meshes) - 1)
-    output_dir = "data/ea5k/"
+    output_dir = "data/eac20k/"
     if os.path.exists(output_dir) and len(os.listdir(output_dir)) > 0:
         print("Output directory already exists. Exiting.")
         exit(1)
 
     values = []
-    for i in tqdm(range(5000)):
+    for i in tqdm(range(20000)):
         label1, label2 = [], []
         for a, b in [dist_range, elev_range, azim_range]:
             diff = np.random.uniform(0, b - a)
@@ -42,7 +42,10 @@ if __name__ == '__main__':
 
         class_id = np.random.randint(*class_id_range)
         label1.append(class_id)
-        label2.append(class_id)
+        if random.random() > 0.5:
+            label2.append(class_id)
+        else:
+            label2.append(np.random.randint(*class_id_range))
 
         dist, elev, azim, class_id = label1
         fov = 2 * np.arctan(0.5 * 6 / dist) * 180 / np.pi
